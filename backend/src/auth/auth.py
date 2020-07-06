@@ -55,8 +55,15 @@ def get_token_auth_header():
 """
 
 
-def check_permissions(permission, payload):
-    raise Exception("Not Implemented")
+def check_permissions(permission='', payload):
+    if 'permission' not in payload:
+        raise AuthError("Permissions not included", 400)
+
+    if permission not in payload['permission']:
+        raise AuthError("User does not have permission", 403)
+    
+    return True
+
 
 
 """
