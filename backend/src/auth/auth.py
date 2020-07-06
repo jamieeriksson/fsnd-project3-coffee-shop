@@ -30,7 +30,16 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
-    raise Exception("Not Implemented")
+    if 'Authorization' not in request.headers:
+    raise AuthError("Header Not Present", 401)
+        
+    auth_header = request.headers["Authorization"]
+    header_parts = auth_header.split(" ")
+
+    if len(auth_header) != 2 or header_parts[0] != "bearer":
+        raise AuthError("Invalid Header", 401)
+
+    return header_parts[1]
 
 
 """
