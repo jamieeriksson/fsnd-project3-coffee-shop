@@ -67,7 +67,7 @@ def check_permissions(permission, payload):
         raise AuthError("Permissions not included", 400)
 
     if permission not in payload["permissions"]:
-        raise AuthError("User does not have permission", 403)
+        raise AuthError("User does not have permission", 401)
 
     return True
 
@@ -124,9 +124,9 @@ def verify_decode_jwt(token):
         except jwt.JWTClaimsError:
             raise AuthError("Invalid Claims", 401)
         except Exception:
-            raise AuthError("Invalid Header", 400)
+            raise AuthError("Invalid Header", 401)
 
-    raise AuthError("Invalid Header", 400)
+    raise AuthError("Invalid Header", 401)
 
 
 """

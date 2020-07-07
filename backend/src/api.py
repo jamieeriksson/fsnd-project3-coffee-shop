@@ -75,14 +75,14 @@ def drinks_details(jwt):
 @requires_auth("post:drinks")
 def create_drink(jwt):
     body = request.get_json()
-    title = body.get("title", "")
-    recipe = body.get("recipe", [])
+    new_title = body.get("title", "")
+    new_recipe = body.get("recipe", [])
 
     try:
-        new_drink = Drink(title=title, recipe=recipe)
+        new_drink = Drink(title=new_title, recipe=json.dumps(new_recipe))
         new_drink.insert()
 
-        return jsonify({"success": True, "drinks": new_drink})
+        return jsonify({"success": True, "drinks": new_drink.long()})
     except:
         abort(422)
 
@@ -100,24 +100,25 @@ def create_drink(jwt):
 """
 
 
-@app.route("/drink/<int:drink_id>", methods=["PATCH"])
+@app.route("/drinks/<int:drink_id>", methods=["PATCH"])
 @requires_auth("patch:drinks")
 def update_drink(jwt, drink_id):
     body = request.get_json()
-    title = body.get("title", "")
-    recipe = body.get("recipe", [])
-
     try:
         drink = Drink.query.filter_by(id=drink_id).one_or_none()
         if drink is None:
             abort(404)
 
-        drink.title = title
-        drink.recipe = recipe
+        if "title" in body:
+            title = body.get("title", "")
+            drink.title = title
+        if "recipe" in body:
+            recipe = body.get("recipe", [])
+            drink.recipe = recipe
 
         drink.update()
 
-        return jsonify({"success": True, "drinks": [drink]})
+        return jsonify({"success": True, "drinks": [drink.short()]})
     except:
         abort(422)
 
@@ -134,7 +135,7 @@ def update_drink(jwt, drink_id):
 """
 
 
-@app.route("/drink/<int:drink_id>", methods=["DELETE"])
+@app.route("/drinks/<int:drink_id>", methods=["DELETE"])
 @requires_auth("delete:drinks")
 def delete_drink(jwt, drink_id):
     try:
