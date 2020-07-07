@@ -47,15 +47,18 @@ def drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 """
- @app.route('/drinks-detail')
- @requires_auth('get:drinks-detail')
- def drinks_details():
-     try:
+
+
+@app.route("/drinks-detail")
+@requires_auth("get:drinks-detail")
+def drinks_details():
+    try:
         all_drink_details = [drink.long() for drink in Drink.query.all()]
 
-        return jsonify({'success': True, 'drinks': all_drink_details})
+        return jsonify({"success": True, "drinks": all_drink_details})
     except:
         abort(400)
+
 
 """
 @TODO implement endpoint
@@ -67,8 +70,9 @@ def drinks():
         or appropriate status code indicating reason for failure
 """
 
-@app.route('/drinks', methods=['POST'])
-@requires_auth('post:drinks')
+
+@app.route("/drinks", methods=["POST"])
+@requires_auth("post:drinks")
 def create_drink():
     body = request.get_json()
     title = body.get("title", "")
@@ -78,7 +82,7 @@ def create_drink():
         new_drink = Drink(title=title, recipe=recipe)
         new_drink.insert()
 
-        return jsonify({'success': True, 'drinks': new_drink})
+        return jsonify({"success": True, "drinks": new_drink})
     except:
         abort(400)
 
@@ -95,13 +99,14 @@ def create_drink():
         or appropriate status code indicating reason for failure
 """
 
-@app.route('/drink/<int:drink_id>', methods=['PATCH'])
-@requires_auth('patch:drinks')
+
+@app.route("/drink/<int:drink_id>", methods=["PATCH"])
+@requires_auth("patch:drinks")
 def update_drink(drink_id):
     body = request.get_json()
     title = body.get("title", "")
     recipe = body.get("recipe", [])
-    
+
     try:
         drink = Drink.query.filter_by(id=drink_id).one_or_none()
         if drink is None:
@@ -112,10 +117,9 @@ def update_drink(drink_id):
 
         drink.update()
 
-        return jsonify({'success': True, 'drinks': [drink]})
+        return jsonify({"success": True, "drinks": [drink]})
     except:
         abort(400)
-    
 
 
 """
@@ -129,18 +133,20 @@ def update_drink(drink_id):
         or appropriate status code indicating reason for failure
 """
 
-@app.route('/drink/<int:drink_id>', methods=['DELETE'])
-@requires_auth('delete:drinks')
+
+@app.route("/drink/<int:drink_id>", methods=["DELETE"])
+@requires_auth("delete:drinks")
 def delete_drink(drink_id):
     try:
         drink = Drink.query.filter_by(id=drink_id).one_or_none()
         if drink is None:
             abort(400)
-        
+
         drink.delete()
-        return jsonify({'success': True, 'delete': drink_id})
+        return jsonify({"success": True, "delete": drink_id})
     except:
         abort(400)
+
 
 ## Error Handling
 """

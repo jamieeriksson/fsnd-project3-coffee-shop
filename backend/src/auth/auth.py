@@ -1,8 +1,15 @@
 import json
-from flask import request, _request_ctx_stack
+import os
 from functools import wraps
-from jose import jwt
 from urllib.request import urlopen
+
+from flask import _request_ctx_stack, request
+
+from jose import jwt
+
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
+ALGORITHM = os.getenv("ALGORITHM")
+API_AUDIENCE = os.getenv("API_AUDIENCE")
 
 ## AuthError Exception
 """
@@ -30,9 +37,9 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
-    if 'Authorization' not in request.headers:
-    raise AuthError("Header Not Present", 401)
-        
+    if "Authorization" not in request.headers:
+        raise AuthError("Header Not Present", 401)
+
     auth_header = request.headers["Authorization"]
     header_parts = auth_header.split(" ")
 
@@ -55,15 +62,14 @@ def get_token_auth_header():
 """
 
 
-def check_permissions(permission='', payload):
-    if 'permission' not in payload:
+def check_permissions(permission, payload):
+    if "permission" not in payload:
         raise AuthError("Permissions not included", 400)
 
-    if permission not in payload['permission']:
+    if permission not in payload["permission"]:
         raise AuthError("User does not have permission", 403)
-    
-    return True
 
+    return True
 
 
 """
@@ -82,23 +88,35 @@ def check_permissions(permission='', payload):
 
 
 def verify_decode_jwt(token):
-    jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
+    jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
     jwks = json.loads(jsonurl.read())
-    
+
     unverified_header = jwt.get_unverified_header(token)
 
-    rsa_key={}
-    
-    if 'kid' not in unverified_header:
+    rsa_key = {}
+
+    if "kid" not in unverified_header:
         raise AuthError("Invalid Header", 401)
 
-    for key in jwks['keys']:
-        if key['kid'] == unverified_header['kid']:
-            rsa_key = {'kty': key['kty'],'kid': key['kid'],'use': key['use'],'n': key['n'],'e': key['e'],}
-    
+    for key in jwks["keys"]:
+        if key["kid"] == unverified_header["kid"]:
+            rsa_key = {
+                "kty": key["kty"],
+                "kid": key["kid"],
+                "use": key["use"],
+                "n": key["n"],
+                "e": key["e"],
+            }
+
     if rsa_key:
         try:
-            payload = jwt.decode(token, rsa_key, algorithms=ALGORITHMS,audience=API_AUDIENCE, issuer='https://' + AUTH0_DOMAIN + '/')
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer="https://" + AUTH0_DOMAIN + "/",
+            )
             return payload
 
         except jwt.ExpiredSignatureError:
