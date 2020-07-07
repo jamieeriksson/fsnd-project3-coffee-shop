@@ -8,7 +8,7 @@ from flask import _request_ctx_stack, request
 from jose import jwt
 
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
-ALGORITHM = os.getenv("ALGORITHM")
+ALGORITHMS = os.getenv("ALGORITHMS")
 API_AUDIENCE = os.getenv("API_AUDIENCE")
 
 ## AuthError Exception
@@ -43,7 +43,7 @@ def get_token_auth_header():
     auth_header = request.headers["Authorization"]
     header_parts = auth_header.split(" ")
 
-    if len(auth_header) != 2 or header_parts[0] != "bearer":
+    if len(header_parts) != 2 or header_parts[0].lower() != "bearer":
         raise AuthError("Invalid Header", 401)
 
     return header_parts[1]
@@ -63,10 +63,10 @@ def get_token_auth_header():
 
 
 def check_permissions(permission, payload):
-    if "permission" not in payload:
+    if "permissions" not in payload:
         raise AuthError("Permissions not included", 400)
 
-    if permission not in payload["permission"]:
+    if permission not in payload["permissions"]:
         raise AuthError("User does not have permission", 403)
 
     return True
